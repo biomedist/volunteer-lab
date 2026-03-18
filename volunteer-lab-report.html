@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>진단검사 해외봉사 관리 시스템</title>
+<style>
+  /* ── 오프라인 완전 동작: 시스템 폰트 내장 스택 ── */
+  @font-face {
+    font-family: 'AppSans';
+    src: local('Apple SD Gothic Neo'), local('AppleSDGothicNeo-Regular'),
+         local('Noto Sans KR'), local('NotoSansKR-Regular'),
+         local('Malgun Gothic'), local('맑은 고딕'),
+         local('Nanum Gothic'), local('NanumGothic'),
+         local('Segoe UI'), local('sans-serif');
+    font-weight: 400;
+  }
+  @font-face {
+    font-family: 'AppSans';
+    src: local('Apple SD Gothic Neo Bold'), local('AppleSDGothicNeo-Bold'),
+         local('Noto Sans KR Bold'), local('NotoSansKR-Bold'),
+         local('Malgun Gothic Bold'), local('맑은 고딕 Bold'),
+         local('Nanum Gothic Bold'), local('NanumGothicBold'),
+         local('Segoe UI Bold');
+    font-weight: 700 900;
+  }
+</style>
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --surface2: #f0f2f5;
+    --surface3: #e4e8ee;
+    --border: #d1d9e0;
+    --accent: #0969da;
+    --accent2: #0550ae;
+    --accent-dim: rgba(9,105,218,0.08);
+    --red: #cf222e;
+    --yellow: #9a6700;
+    --blue: #0969da;
+    --purple: #6e40c9;
+    --text: #1f2328;
+    --text2: #57606a;
+    --text3: #8c959f;
+    --radius: 10px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'AppSans', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Nanum Gothic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Georgia', 'Apple SD Gothic Neo', 'Malgun Gothic', serif;
+    font-size: 26px; color: var(--accent2);
+    letter-spacing: -0.5px;
+    font-weight: 700;
+  }
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--accent), #0550ae);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .header-actions { display: flex; gap: 8px; }
+
+  /* ── NAV TABS ── */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex; gap: 2px;
+    overflow-x: auto;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 12px 16px;
+    border: none; background: none; cursor: pointer;
+    color: var(--text2); font-family: 'AppSans', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Nanum Gothic', sans-serif;
+    font-size: 13px; font-weight: 500;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s; white-space: nowrap;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-badge {
+    background: var(--surface3); color: var(--text2);
+    border-radius: 10px; padding: 1px 6px; font-size: 11px;
+    font-family: 'Courier New', 'Consolas', monospace;
+  }
+  .tab.active .tab-badge { background: var(--accent-dim); color: var(--accent); }
+
+  /* ── MAIN LAYOUT ── */
+  main { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── SECTION CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: var(--text2);
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title::before {
+    content: ''; display: block;
+    width: 3px; height: 14px;
+    background: var(--accent); border-radius: 2px;
+  }
+
+  /* ── FORM ELEMENTS ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 12px; font-weight: 600; color: var(--text2); letter-spacing: 0.3px; }
+
+  input[type="text"], input[type="date"], input[type="number"],
+  textarea, select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'AppSans', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Nanum Gothic', sans-serif;
+    font-size: 14px;
+    padding: 9px 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+  textarea { resize: vertical; min-height: 80px; }
+  select option { background: var(--surface2); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    border: none; border-radius: 6px; cursor: pointer;
+    font-family: 'AppSans', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Nanum Gothic', sans-serif;
+    font-weight: 600; font-size: 13px;
+    padding: 9px 16px;
+    transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary {
+    background: var(--accent); color: #fff;
+  }
+  .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--surface2); border-color: var(--text3); }
+  .btn-danger { background: rgba(207,34,46,0.08); color: var(--red); border: 1px solid rgba(207,34,46,0.25); }
+  .btn-danger:hover { background: rgba(207,34,46,0.15); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-blue { background: rgba(9,105,218,0.08); color: var(--blue); border: 1px solid rgba(9,105,218,0.25); }
+  .btn-blue:hover { background: rgba(9,105,218,0.15); }
+
+  /* ── MEMBER TAGS ── */
+  .tag-input-wrap { display: flex; gap: 8px; }
+  .tags-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag {
+    background: var(--surface3); border: 1px solid var(--border);
+    border-radius: 20px; padding: 3px 10px 3px 12px;
+    font-size: 12px; display: flex; align-items: center; gap: 6px;
+  }
+  .tag-remove { cursor: pointer; color: var(--text3); font-size: 14px; line-height: 1; }
+  .tag-remove:hover { color: var(--red); }
+
+  /* ── TEST ITEMS ── */
+  .test-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .test-item-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .test-name-badge {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .test-number {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent-dim); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; font-family: 'Courier New', 'Consolas', monospace;
+  }
+  .test-title { font-weight: 600; font-size: 14px; }
+  .method-badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 4px;
+    font-family: 'Courier New', 'Consolas', monospace;
+  }
+  .method-manual { background: rgba(154,103,0,0.08); color: var(--yellow); border: 1px solid rgba(154,103,0,0.25); }
+  .method-auto { background: rgba(9,105,218,0.08); color: var(--blue); border: 1px solid rgba(9,105,218,0.25); }
+  .method-rapid { background: rgba(110,64,201,0.08); color: var(--purple); border: 1px solid rgba(110,64,201,0.25); }
+  .test-body { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .file-upload-area {
+    border: 1px dashed var(--border);
+    border-radius: 6px; padding: 12px;
+    text-align: center; cursor: pointer;
+    transition: all 0.2s; color: var(--text3); font-size: 12px;
+  }
+  .file-upload-area:hover { border-color: var(--accent); color: var(--accent2); background: var(--accent-dim); }
+  .file-attached { border-color: var(--accent); background: var(--accent-dim); color: var(--accent2); }
+
+  /* ── SUPPLIES ── */
+  .supply-category { margin-bottom: 20px; }
+  .supply-category-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text3); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .supply-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+  .supply-item {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .supply-item:hover { border-color: var(--text3); }
+  .supply-item.checked { border-color: var(--accent); background: var(--accent-dim); }
+  .supply-check {
+    width: 16px; height: 16px; border-radius: 4px;
+    border: 1.5px solid var(--border); cursor: pointer;
+    appearance: none; background: var(--surface);
+    flex-shrink: 0; transition: all 0.15s;
+  }
+  .supply-check:checked {
+    background: var(--accent); border-color: var(--accent);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1.5 5l2.5 2.5 4.5-4.5' stroke='%23fff' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-size: contain;
+  }
+  .supply-name { font-size: 13px; flex: 1; }
+  .supply-qty {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .supply-qty input {
+    width: 60px; text-align: center; padding: 4px 6px; font-size: 13px;
+    font-family: 'Courier New', 'Consolas', monospace;
+  }
+  .supply-unit { font-size: 12px; color: var(--text3); }
+  .supply-note { font-size: 11px; color: var(--text3); }
+
+  /* ── RECORDS TABLE ── */
+  .record-date-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--border); margin-bottom: 12px;
+  }
+  .record-date-label { font-weight: 700; color: var(--accent); font-family: 'Courier New', 'Consolas', monospace; }
+  .record-table { width: 100%; border-collapse: collapse; }
+  .record-table th {
+    text-align: left; padding: 8px 12px;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--text3); border-bottom: 1px solid var(--border);
+    font-weight: 600;
+  }
+  .record-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .record-table tr:last-child td { border-bottom: none; }
+  .record-table input { width: 80px; text-align: center; padding: 5px; font-family: 'Courier New', 'Consolas', monospace; }
+  .total-row { background: var(--surface2); }
+  .total-row td { font-weight: 700; color: var(--accent); font-family: 'Courier New', 'Consolas', monospace; }
+
+  /* ── EPISODES ── */
+  .episode-item {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; margin-bottom: 12px;
+  }
+  .episode-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .episode-type-badge {
+    font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    font-weight: 600; letter-spacing: 0.3px;
+  }
+  .episode-notable { background: rgba(154,103,0,0.08); color: var(--yellow); border: 1px solid rgba(154,103,0,0.25); }
+  .episode-challenge { background: rgba(207,34,46,0.08); color: var(--red); border: 1px solid rgba(207,34,46,0.25); }
+  .episode-change { background: rgba(9,105,218,0.08); color: var(--accent); border: 1px solid rgba(9,105,218,0.25); }
+  .episode-general { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+  .episode-body { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* ── STATS DASHBOARD ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px;
+  }
+  .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); margin-bottom: 8px; }
+  .stat-value { font-size: 28px; font-weight: 700; font-family: 'Courier New', 'Consolas', monospace; color: var(--accent); }
+  .stat-sub { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+  .chart-bar-wrap { margin-top: 8px; }
+  .chart-bar-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .chart-bar-label { font-size: 12px; color: var(--text2); width: 120px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chart-bar-track { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .chart-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #388bfd); border-radius: 4px; transition: width 0.5s ease; }
+  .chart-bar-count { font-size: 12px; font-family: 'Courier New', 'Consolas', monospace; color: var(--text2); min-width: 30px; text-align: right; }
+
+  /* ── PRINT REPORT ── */
+  @media print {
+    body { background: #fff !important; color: #000 !important; font-size: 11pt; }
+    header, nav, .no-print { display: none !important; }
+    main { padding: 0; max-width: 100%; }
+    .card { background: #fff !important; border: 1px solid #ccc !important; page-break-inside: avoid; }
+    .card-title { color: #333 !important; }
+    .card-title::before { background: #333 !important; }
+    .text { color: #000 !important; }
+    .report-page { display: block !important; }
+    .stat-value { color: #000 !important; }
+    .stat-card { background: #f9f9f9 !important; }
+    input, textarea { border: none !important; background: transparent !important; color: #000 !important; }
+    .btn { display: none !important; }
+    .print-report-header { display: block !important; }
+  }
+
+  .print-report-header {
+    display: none;
+    text-align: center; padding: 20px 0 30px;
+    border-bottom: 3px double #000;
+    margin-bottom: 30px;
+  }
+  .print-report-header h1 { font-size: 22pt; font-weight: 900; }
+  .print-report-header p { font-size: 11pt; color: #555; margin-top: 6px; }
+
+  /* ── MISC ── */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+  .empty-state {
+    text-align: center; padding: 40px 20px; color: var(--text3);
+  }
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+  .row { display: flex; gap: 12px; align-items: flex-start; }
+  .flex-end { justify-content: flex-end; }
+  .flex-between { justify-content: space-between; align-items: center; }
+  .gap-8 { gap: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-20 { margin-top: 20px; }
+
+  .progress-bar {
+    height: 4px; background: var(--surface3); border-radius: 2px; margin-top: 16px;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px; transition: width 0.4s;
+  }
+
+  .info-banner {
+    background: rgba(9,105,218,0.06); border: 1px solid rgba(9,105,218,0.2);
+    border-radius: 6px; padding: 10px 14px; font-size: 13px; color: var(--blue);
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+
+  .supply-calc-info {
+    background: var(--accent-dim); border: 1px solid rgba(9,105,218,0.2);
+    border-radius: 6px; padding: 10px 14px; font-size: 12px; color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface2); }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  @media (max-width: 700px) {
+    .form-grid, .form-grid-3, .test-body, .episode-body { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .supply-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🧬</div>
+    진단검사 해외봉사
+  </div>
+  <div class="header-actions no-print">
+    <button class="btn btn-secondary btn-sm" onclick="loadFromFile()">📂 불러오기</button>
+    <button class="btn btn-secondary btn-sm" onclick="saveToFile()">💾 저장</button>
+    <button class="btn btn-primary btn-sm" onclick="printReport()">🖨️ 보고서 출력</button>
+  </div>
+</header>
+
+<nav class="no-print">
+  <button class="tab active" onclick="showTab('mission',this)">🌍 기본정보</button>
+  <button class="tab" onclick="showTab('tests',this)">🔬 검사항목 <span class="tab-badge" id="badge-tests">0</span></button>
+  <button class="tab" onclick="showTab('supplies',this)">📦 시약/소모품 <span class="tab-badge" id="badge-supplies">0</span></button>
+  <button class="tab" onclick="showTab('records',this)">📋 일별기록 <span class="tab-badge" id="badge-records">0</span></button>
+  <button class="tab" onclick="showTab('episodes',this)">📝 에피소드 <span class="tab-badge" id="badge-episodes">0</span></button>
+  <button class="tab" onclick="showTab('report',this)">📊 보고서</button>
+</nav>
+
+<main>
+
+<!-- ══════════ PAGE 1: 기본정보 ══════════ -->
+<div class="page active" id="page-mission">
+  <div class="card">
+    <div class="card-title">봉사활동 기본 정보</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>국가</label>
+        <input type="text" id="m-country" placeholder="예: 캄보디아" oninput="saveMission()">
+      </div>
+      <div class="form-group">
+        <label>지역/도시</label>
+        <input type="text" id="m-region" placeholder="예: 씨엠립 주" oninput="saveMission()">
+      </div>
+      <div class="form-group">
+        <label>봉사 시작일</label>
+        <input type="date" id="m-start" oninput="saveMission();updateRecordDates()">
+      </div>
+      <div class="form-group">
+        <label>봉사 종료일</label>
+        <input type="date" id="m-end" oninput="saveMission();updateRecordDates()">
+      </div>
+      <div class="form-group full">
+        <label>봉사 기관 / 단체명</label>
+        <input type="text" id="m-org" placeholder="예: ○○ 대학병원 의료봉사단" oninput="saveMission()">
+      </div>
+      <div class="form-group full">
+        <label>봉사 장소 (세부)</label>
+        <input type="text" id="m-place" placeholder="예: 씨엠립 OO 초등학교, 지역 보건소 2곳" oninput="saveMission()">
+      </div>
+      <div class="form-group">
+        <label>예상 수혜 인원 (명)</label>
+        <input type="number" id="m-target" placeholder="0" oninput="saveMission()">
+      </div>
+      <div class="form-group">
+        <label>파견 인원 (명)</label>
+        <input type="number" id="m-team-count" placeholder="0" oninput="saveMission()">
+      </div>
+      <div class="form-group full">
+        <label>봉사 목적 / 배경</label>
+        <textarea id="m-purpose" placeholder="이번 봉사활동의 목적과 배경을 기입하세요..." oninput="saveMission()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">팀 구성원</div>
+    <div class="form-group">
+      <label>역할 선택</label>
+      <div class="row gap-8">
+        <select id="m-role" style="width:160px;flex-shrink:0">
+          <option value="임상병리사">임상병리사</option>
+          <option value="간호사">간호사</option>
+          <option value="학생">학생</option>
+          <option value="통역">통역</option>
+        </select>
+        <input type="text" id="m-member-input" placeholder="이름 입력 후 추가" style="flex:1" onkeydown="if(event.key==='Enter')addMember()">
+        <button class="btn btn-primary btn-sm" onclick="addMember()">+ 추가</button>
+      </div>
+      <div class="tags-list" id="members-list"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">사전 준비 체크리스트</div>
+    <div class="supply-grid" id="pre-checklist"></div>
+  </div>
+</div>
+
+<!-- ══════════ PAGE 2: 검사항목 ══════════ -->
+<div class="page" id="page-tests">
+  <div class="row flex-between mb no-print" style="margin-bottom:16px">
+    <div style="color:var(--text2);font-size:13px">검사 가능 항목을 등록하고 검사방법과 SOP 파일을 첨부하세요.</div>
+    <button class="btn btn-primary" onclick="addTest()">+ 항목 추가</button>
+  </div>
+  <div id="tests-list">
+    <div class="empty-state">
+      <div class="icon">🔬</div>
+      <p>검사 항목을 추가해주세요</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PAGE 3: 시약/소모품 ══════════ -->
+<div class="page" id="page-supplies">
+  <div class="supply-calc-info" id="supply-calc-banner">
+    💡 검사항목 탭에서 예상 검사건수를 입력하면 수량이 자동 계산됩니다.
+  </div>
+  <div class="row flex-between no-print" style="margin-bottom:16px">
+    <div style="color:var(--text2);font-size:13px">항목별 준비 수량을 확인하고 체크하세요.</div>
+    <button class="btn btn-secondary btn-sm" onclick="toggleAddSupplyForm()">+ 항목 추가</button>
+  </div>
+
+  <!-- 인라인 항목 추가 폼 -->
+  <div id="add-supply-form" style="display:none;background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:18px 20px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px">새 항목 추가</div>
+    <div style="display:grid;grid-template-columns:2fr 2fr 1fr 1fr;gap:10px;align-items:end;flex-wrap:wrap">
+      <div class="form-group">
+        <label>항목명 *</label>
+        <input type="text" id="new-supply-name" placeholder="예: 혈당 시약 스트립">
+      </div>
+      <div class="form-group">
+        <label>분류 *</label>
+        <select id="new-supply-cat">
+          <option value="채혈 소모품">채혈 소모품</option>
+          <option value="팁/피펫">팁/피펫</option>
+          <option value="시약 키트">시약 키트</option>
+          <option value="냉장/보관">냉장/보관</option>
+          <option value="검사 장비">검사 장비</option>
+          <option value="안전 및 폐기">안전 및 폐기</option>
+          <option value="기록/행정">기록/행정</option>
+          <option value="기타">기타</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>수량</label>
+        <input type="number" id="new-supply-qty" value="0" min="0">
+      </div>
+      <div class="form-group">
+        <label>단위</label>
+        <input type="text" id="new-supply-unit" placeholder="개" value="개">
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>메모 (보관조건 등)</label>
+      <input type="text" id="new-supply-note" placeholder="예: 냉장 보관, 배터리 확인 등">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+      <button class="btn btn-secondary btn-sm" onclick="toggleAddSupplyForm()">취소</button>
+      <button class="btn btn-primary btn-sm" onclick="confirmAddSupply()">✓ 추가</button>
+    </div>
+  </div>
+
+  <div id="supplies-list"></div>
+</div>
+
+<!-- ══════════ PAGE 4: 일별기록 ══════════ -->
+<div class="page" id="page-records">
+  <div class="info-banner no-print">
+    📅 봉사 기간의 날짜별로 검사건수를 기록하세요. 기본정보 탭에서 날짜를 먼저 입력해주세요.
+  </div>
+  <div id="records-list">
+    <div class="empty-state">
+      <div class="icon">📅</div>
+      <p>기본정보 탭에서 봉사 시작/종료일을 입력해주세요</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PAGE 5: 에피소드 ══════════ -->
+<div class="page" id="page-episodes">
+  <div class="row flex-between no-print" style="margin-bottom:16px">
+    <div style="color:var(--text2);font-size:13px">현장 에피소드, 인상적인 케이스, 사회적 변화를 기록하세요.</div>
+    <button class="btn btn-primary" onclick="addEpisode()">+ 기록 추가</button>
+  </div>
+  <div id="episodes-list">
+    <div class="empty-state">
+      <div class="icon">📝</div>
+      <p>에피소드를 추가해주세요</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PAGE 6: 보고서 ══════════ -->
+<div class="page" id="page-report">
+  <div class="print-report-header">
+    <h1>진단검사 해외봉사활동 보고서</h1>
+    <p id="report-subtitle"></p>
+  </div>
+
+  <div class="no-print row flex-end" style="margin-bottom:16px;gap:8px">
+    <button class="btn btn-secondary" onclick="exportExcel()">📊 Excel 내보내기</button>
+    <button class="btn btn-primary" onclick="printReport()">🖨️ 보고서 인쇄</button>
+  </div>
+
+  <!-- 통계 -->
+  <div class="stats-grid" id="report-stats"></div>
+
+  <!-- 기본정보 요약 -->
+  <div class="card" id="report-mission-summary"></div>
+
+  <!-- 검사항목 요약 -->
+  <div class="card" id="report-tests-summary"></div>
+
+  <!-- 일별 검사 실적 -->
+  <div class="card" id="report-records-summary"></div>
+
+  <!-- 에피소드 요약 -->
+  <div class="card" id="report-episodes-summary"></div>
+
+  <!-- 사회적 기여 -->
+  <div class="card">
+    <div class="card-title">사회적 기여 및 현장 변화</div>
+    <textarea id="report-contribution" placeholder="이번 봉사활동이 지역사회에 미친 영향, 발견된 주요 질환 현황, 의료 접근성 개선 효과 등을 기술하세요..." style="min-height:120px" oninput="saveContribution()"></textarea>
+    <div style="margin-top:16px">
+      <label style="display:block;margin-bottom:6px">다음 봉사팀 인계 사항</label>
+      <textarea id="report-handover" placeholder="다음 봉사팀이 알아야 할 사항, 개선점, 준비 조언을 기록하세요..." style="min-height:80px" oninput="saveContribution()"></textarea>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ─── HIDDEN FILE INPUT ─── -->
+<input type="file" id="load-file-input" accept=".json" style="display:none" onchange="handleFileLoad(event)">
+
+<script>
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+let state = {
+  mission: { country:'', region:'', start:'', end:'', org:'', place:'', purpose:'', targetCount:'', teamCount:'', members:[] },
+  tests: [],
+  supplies: [],
+  records: {},
+  episodes: [],
+  contribution: '',
+  handover: '',
+  preChecklist: []
+};
+
+const PRE_CHECKLIST = [
+  '검사항목 설정', '소모품 리스트 체크', '시약 유효기간 확인',
+  '시약 개수 확인', '검사 프로토콜 인쇄', '장비 사전 점검'
+];
+
+const DEFAULT_SUPPLIES = [
+  { cat:'채혈 소모품', name:'알콜솜', unit:'장', qty:0, note:'검사건수 × 2', autoCalc: 2 },
+  { cat:'채혈 소모품', name:'지혈용 솜/거즈', unit:'개', qty:0, note:'채혈건수 × 1', autoCalc: 1 },
+  { cat:'채혈 소모품', name:'일회용 장갑', unit:'쌍', qty:0, note:'', autoCalc: 0 },
+  { cat:'채혈 소모품', name:'채혈침 (Lancet)', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'채혈 소모품', name:'Syringe 3ml', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'채혈 소모품', name:'Syringe 5ml', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'채혈 소모품', name:'채혈관 (EDTA)', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'채혈 소모품', name:'채혈관 (SST)', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'채혈 소모품', name:'지혈대 (Tourniquet)', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'팁/피펫', name:'Yellow Tip (200μL)', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'팁/피펫', name:'Blue Tip (1000μL)', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'팁/피펫', name:'White Tip (10μL)', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'팁/피펫', name:'파스퇴르 피펫', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'시약 키트', name:'혈당 시약 스트립', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'시약 키트', name:'요분석 시약 스트립', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'시약 키트', name:'말라리아 RDT 키트', unit:'개', qty:0, note:'냉장 보관', autoCalc: 0 },
+  { cat:'시약 키트', name:'뎅기열 RDT 키트', unit:'개', qty:0, note:'냉장 보관', autoCalc: 0 },
+  { cat:'시약 키트', name:'매독 RPR 키트', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'시약 키트', name:'HBsAg 키트', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'시약 키트', name:'HIV 신속검사 키트', unit:'개', qty:0, note:'냉장 보관', autoCalc: 0 },
+  { cat:'시약 키트', name:'대장균 배양 키트', unit:'개', qty:0, note:'', autoCalc: 0 },
+  { cat:'냉장/보관', name:'아이스팩 (냉장 시약용)', unit:'개', qty:10, note:'냉장 시약 운반 필수', autoCalc: 0 },
+  { cat:'냉장/보관', name:'아이스박스/쿨러', unit:'개', qty:1, note:'', autoCalc: 0 },
+  { cat:'검사 장비', name:'혈당측정기 (Glucometer)', unit:'대', qty:1, note:'배터리 확인', autoCalc: 0 },
+  { cat:'검사 장비', name:'소형 원심분리기', unit:'대', qty:1, note:'전압 어댑터', autoCalc: 0 },
+  { cat:'검사 장비', name:'현미경', unit:'대', qty:1, note:'', autoCalc: 0 },
+  { cat:'검사 장비', name:'요분석기', unit:'대', qty:1, note:'', autoCalc: 0 },
+  { cat:'검사 장비', name:'손가락 산소포화도계', unit:'개', qty:2, note:'', autoCalc: 0 },
+  { cat:'안전 및 폐기', name:'폐기물 봉투 (감염성)', unit:'장', qty:5, note:'', autoCalc: 0 },
+  { cat:'안전 및 폐기', name:'날카로운 폐기물 통 (Sharps)', unit:'개', qty:2, note:'', autoCalc: 0 },
+  { cat:'안전 및 폐기', name:'소독용 알콜 (500ml)', unit:'병', qty:3, note:'70% 이소프로판올', autoCalc: 0 },
+  { cat:'안전 및 폐기', name:'손 소독제', unit:'개', qty:5, note:'', autoCalc: 0 },
+  { cat:'기록/행정', name:'검사결과 기록지', unit:'장', qty:200, note:'', autoCalc: 0 },
+  { cat:'기록/행정', name:'환자 라벨 스티커', unit:'장', qty:200, note:'', autoCalc: 0 },
+  { cat:'기록/행정', name:'매직/볼펜', unit:'자루', qty:10, note:'', autoCalc: 0 },
+  { cat:'기록/행정', name:'지퍼백 (검체 보관)', unit:'장', qty:50, note:'', autoCalc: 0 },
+];
+
+// ═══════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════
+function showTab(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+  if (name === 'report') renderReport();
+  if (name === 'supplies') renderSupplies();
+  if (name === 'records') renderRecords();
+}
+
+// ═══════════════════════════════════════
+//  MISSION
+// ═══════════════════════════════════════
+function saveMission() {
+  state.mission.country = document.getElementById('m-country').value;
+  state.mission.region = document.getElementById('m-region').value;
+  state.mission.start = document.getElementById('m-start').value;
+  state.mission.end = document.getElementById('m-end').value;
+  state.mission.org = document.getElementById('m-org').value;
+  state.mission.place = document.getElementById('m-place').value;
+  state.mission.purpose = document.getElementById('m-purpose').value;
+  state.mission.targetCount = document.getElementById('m-target').value;
+  state.mission.teamCount = document.getElementById('m-team-count').value;
+}
+
+function addMember() {
+  const name = document.getElementById('m-member-input').value.trim();
+  const role = document.getElementById('m-role').value;
+  if (!name) return;
+  state.mission.members.push({ name, role });
+  document.getElementById('m-member-input').value = '';
+  renderMembers();
+}
+
+function removeMember(i) {
+  state.mission.members.splice(i, 1);
+  renderMembers();
+}
+
+function renderMembers() {
+  const el = document.getElementById('members-list');
+  el.innerHTML = state.mission.members.map((m, i) =>
+    `<span class="tag">
+      <span style="font-size:11px;color:var(--text3)">${m.role}</span>
+      <span>${m.name}</span>
+      <span class="tag-remove" onclick="removeMember(${i})">×</span>
+    </span>`
+  ).join('');
+}
+
+function renderPreChecklist() {
+  const el = document.getElementById('pre-checklist');
+  if (!state.preChecklist.length) {
+    state.preChecklist = PRE_CHECKLIST.map(t => ({ text: t, done: false }));
+  }
+  el.innerHTML = state.preChecklist.map((item, i) =>
+    `<div class="supply-item ${item.done ? 'checked' : ''}">
+      <input type="checkbox" class="supply-check" ${item.done ? 'checked' : ''}
+        onchange="state.preChecklist[${i}].done=this.checked;renderPreChecklist()">
+      <span class="supply-name">${item.text}</span>
+    </div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════
+//  TESTS
+// ═══════════════════════════════════════
+const TEST_METHODS = ['수기법 (Manual)', '자동화 장비 (Auto)', '신속검사 (Rapid/RDT)', '현미경 검사', '배양 검사', '면역법 (Immunoassay)', '기타'];
+
+function addTest() {
+  state.tests.push({
+    id: Date.now(),
+    name: '',
+    category: '혈액검사',
+    method: '신속검사 (Rapid/RDT)',
+    desc: '',
+    expectedCount: 0,
+    sopFile: null,
+    sopFileName: ''
+  });
+  renderTests();
+  updateBadges();
+}
+
+function removeTest(id) {
+  state.tests = state.tests.filter(t => t.id !== id);
+  renderTests();
+  updateBadges();
+}
+
+function updateTest(id, field, value) {
+  const t = state.tests.find(t => t.id === id);
+  if (t) { t[field] = value; }
+  updateBadges();
+}
+
+function renderTests() {
+  const el = document.getElementById('tests-list');
+  if (!state.tests.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🔬</div><p>검사 항목을 추가해주세요</p></div>`;
+    return;
+  }
+  el.innerHTML = state.tests.map((t, i) => {
+    const methodClass = t.method.includes('수기') ? 'method-manual' : t.method.includes('자동') ? 'method-auto' : 'method-rapid';
+    return `
+    <div class="test-item">
+      <div class="test-item-header">
+        <div class="test-name-badge">
+          <div class="test-number">${i+1}</div>
+          <input type="text" value="${t.name}" placeholder="검사명 (예: 혈당, 말라리아)"
+            style="background:transparent;border:none;font-size:15px;font-weight:600;color:var(--text);padding:0;width:200px"
+            oninput="updateTest(${t.id},'name',this.value)">
+          <span class="method-badge ${methodClass}">${t.method.split(' ')[0]}</span>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="removeTest(${t.id})">삭제</button>
+      </div>
+      <div class="test-body">
+        <div class="form-group">
+          <label>검사 분류</label>
+          <select onchange="updateTest(${t.id},'category',this.value)">
+            ${['혈액검사','요검사','면역/감염','기생충','생화학','기타'].map(c =>
+              `<option ${t.category===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>검사 방법</label>
+          <select onchange="updateTest(${t.id},'method',this.value)">
+            ${TEST_METHODS.map(m => `<option ${t.method===m?'selected':''}>${m}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>예상 검사건수 / 일</label>
+          <input type="number" value="${t.expectedCount}" placeholder="0"
+            oninput="updateTest(${t.id},'expectedCount',+this.value)">
+        </div>
+        <div class="form-group">
+          <label>SOP / 프로토콜 파일</label>
+          <div class="file-upload-area ${t.sopFileName ? 'file-attached' : ''}"
+            onclick="document.getElementById('file-${t.id}').click()">
+            ${t.sopFileName ? '📎 ' + t.sopFileName : '📄 파일 첨부 (PDF, 이미지)'}
+          </div>
+          <input type="file" id="file-${t.id}" style="display:none" accept=".pdf,.png,.jpg,.jpeg"
+            onchange="attachFile(${t.id},this)">
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>검사 방법 메모 / 주의사항</label>
+          <textarea placeholder="검사 절차, 참고치, 주의사항 등을 기록하세요..."
+            oninput="updateTest(${t.id},'desc',this.value)">${t.desc}</textarea>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function attachFile(id, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const t = state.tests.find(t => t.id === id);
+    if (t) { t.sopFile = e.target.result; t.sopFileName = file.name; }
+    renderTests();
+  };
+  reader.readAsDataURL(file);
+}
+
+// ═══════════════════════════════════════
+//  SUPPLIES
+// ═══════════════════════════════════════
+function initSupplies() {
+  if (!state.supplies.length) {
+    state.supplies = DEFAULT_SUPPLIES.map((s, i) => ({ ...s, id: i, checked: false }));
+  }
+}
+
+function renderSupplies() {
+  initSupplies();
+  const el = document.getElementById('supplies-list');
+  const cats = [...new Set(state.supplies.map(s => s.cat))];
+  const totalDays = getDays();
+  el.innerHTML = cats.map(cat => {
+    const items = state.supplies.filter(s => s.cat === cat);
+    return `
+    <div class="supply-category">
+      <div class="supply-category-title">📁 ${cat}</div>
+      <div class="supply-grid">
+        ${items.map(s => `
+          <div class="supply-item ${s.checked ? 'checked' : ''}">
+            <input type="checkbox" class="supply-check" ${s.checked ? 'checked' : ''}
+              onchange="toggleSupply(${s.id},this.checked)">
+            <div style="flex:1">
+              <div class="supply-name">${s.name}</div>
+              ${s.note ? `<div class="supply-note">${s.note}</div>` : ''}
+            </div>
+            <div class="supply-qty">
+              <input type="number" value="${s.qty}" min="0"
+                onchange="updateSupplyQty(${s.id},+this.value)">
+              <span class="supply-unit">${s.unit}</span>
+            </div>
+            <button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:11px;margin-left:4px" onclick="deleteSupply(${s.id})" title="삭제">✕</button>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  updateBadges();
+}
+
+function toggleSupply(id, val) {
+  const s = state.supplies.find(s => s.id === id);
+  if (s) s.checked = val;
+  renderSupplies();
+}
+
+function updateSupplyQty(id, val) {
+  const s = state.supplies.find(s => s.id === id);
+  if (s) s.qty = val;
+}
+
+function deleteSupply(id) {
+  if (!confirm('이 항목을 삭제하시겠습니까?')) return;
+  state.supplies = state.supplies.filter(s => s.id !== id);
+  renderSupplies();
+}
+
+function toggleAddSupplyForm() {
+  const form = document.getElementById('add-supply-form');
+  const isHidden = form.style.display === 'none';
+  form.style.display = isHidden ? 'block' : 'none';
+  if (isHidden) {
+    document.getElementById('new-supply-name').value = '';
+    document.getElementById('new-supply-qty').value = '0';
+    document.getElementById('new-supply-unit').value = '개';
+    document.getElementById('new-supply-note').value = '';
+    setTimeout(() => document.getElementById('new-supply-name').focus(), 50);
+  }
+}
+
+function confirmAddSupply() {
+  const name = document.getElementById('new-supply-name').value.trim();
+  if (!name) {
+    document.getElementById('new-supply-name').focus();
+    return;
+  }
+  const cat  = document.getElementById('new-supply-cat').value;
+  const qty  = +document.getElementById('new-supply-qty').value || 0;
+  const unit = document.getElementById('new-supply-unit').value.trim() || '개';
+  const note = document.getElementById('new-supply-note').value.trim();
+  state.supplies.push({ id: Date.now(), cat, name, unit, qty, note, checked: false, autoCalc: 0 });
+  toggleAddSupplyForm();
+  renderSupplies();
+}
+
+// ═══════════════════════════════════════
+//  RECORDS
+// ═══════════════════════════════════════
+function getDays() {
+  const s = state.mission.start, e = state.mission.end;
+  if (!s || !e) return [];
+  const days = [];
+  let cur = new Date(s);
+  const end = new Date(e);
+  while (cur <= end) {
+    days.push(cur.toISOString().split('T')[0]);
+    cur.setDate(cur.getDate() + 1);
+  }
+  return days;
+}
+
+function updateRecordDates() {
+  const days = getDays();
+  days.forEach(d => {
+    if (!state.records[d]) {
+      state.records[d] = { phlebotomy: 0, tests: {}, examiners: '', notes: '' };
+      state.tests.forEach(t => { state.records[d].tests[t.id] = 0; });
+    }
+  });
+  renderRecords();
+}
+
+function renderRecords() {
+  const el = document.getElementById('records-list');
+  const days = getDays();
+  if (!days.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">📅</div><p>기본정보 탭에서 봉사 시작/종료일을 입력해주세요</p></div>`;
+    return;
+  }
+  if (!state.tests.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🔬</div><p>검사항목 탭에서 검사 항목을 먼저 추가해주세요</p></div>`;
+    return;
+  }
+  el.innerHTML = days.map(day => {
+    const rec = state.records[day] || { phlebotomy: 0, tests: {}, notes: '' };
+    if (!state.records[day]) state.records[day] = rec;
+    const dateObj = new Date(day + 'T00:00:00');
+    const dayNames = ['일','월','화','수','목','금','토'];
+    const label = `${dateObj.getMonth()+1}월 ${dateObj.getDate()}일 (${dayNames[dateObj.getDay()]})`;
+    const dayTotal = state.tests.reduce((a, t) => a + (+((rec.tests||{})[t.id]||0)), 0);
+    return `
+    <div class="card">
+      <div class="record-date-header">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="record-date-label">${label}</span>
+          <span style="font-size:12px;color:var(--text3)">총 <span id="total-${day}" style="font-weight:700;color:var(--accent);font-family:'Courier New',Consolas,monospace">${dayTotal}</span> 건</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--text3)">채혈건수</span>
+          <input type="number" value="${rec.phlebotomy||0}" min="0"
+            style="width:80px;font-family:'Courier New',Consolas,monospace"
+            oninput="updateRecord('${day}','phlebotomy',+this.value)">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px">
+        ${state.tests.map(t => {
+          const cnt = (rec.tests && rec.tests[t.id]) || 0;
+          const methodShort = t.method.split(' ')[0];
+          return `
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:2px">${t.category} · ${methodShort}</div>
+            <div style="font-weight:600;font-size:13px;margin-bottom:10px;color:var(--text)">${t.name || '(미입력)'}</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="number" min="0" value="${cnt}"
+                style="flex:1;text-align:center;font-size:18px;font-weight:700;font-family:'Courier New',Consolas,monospace;padding:6px 4px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)"
+                oninput="updateRecordTest('${day}',${t.id},+this.value)">
+              <span style="font-size:12px;color:var(--text3)">건</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <div class="form-group">
+        <label>당일 특이사항</label>
+        <input type="text" placeholder="특이사항 메모"
+          value="${rec.notes||''}"
+          oninput="updateRecord('${day}','notes',this.value)">
+      </div>
+    </div>`;
+  }).join('');
+  updateBadges();
+}
+
+function updateRecord(day, field, val) {
+  if (!state.records[day]) state.records[day] = { phlebotomy: 0, tests: {}, examiners: '', notes: '' };
+  state.records[day][field] = val;
+}
+
+function updateRecordTest(day, testId, val) {
+  if (!state.records[day]) state.records[day] = { phlebotomy: 0, tests: {}, notes: '' };
+  if (!state.records[day].tests) state.records[day].tests = {};
+  state.records[day].tests[testId] = val;
+  const total = state.tests.reduce((a, t) => a + (+((state.records[day].tests||{})[t.id]||0)), 0);
+  const el = document.getElementById('total-'+day);
+  if (el) el.textContent = total;
+}
+
+// ═══════════════════════════════════════
+//  EPISODES
+// ═══════════════════════════════════════
+function addEpisode() {
+  state.episodes.push({ id: Date.now(), date: '', type: 'notable', title: '', content: '', impact: '' });
+  renderEpisodes();
+  updateBadges();
+}
+
+function removeEpisode(id) {
+  state.episodes = state.episodes.filter(e => e.id !== id);
+  renderEpisodes();
+  updateBadges();
+}
+
+function updateEpisode(id, field, val) {
+  const ep = state.episodes.find(e => e.id === id);
+  if (ep) ep[field] = val;
+}
+
+const EP_TYPES = {
+  notable: { label: '인상적 케이스', cls: 'episode-notable' },
+  challenge: { label: '어려움/문제', cls: 'episode-challenge' },
+  change: { label: '현장 변화', cls: 'episode-change' },
+  general: { label: '일반 메모', cls: 'episode-general' },
+};
+
+function renderEpisodes() {
+  const el = document.getElementById('episodes-list');
+  if (!state.episodes.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">📝</div><p>에피소드를 추가해주세요</p></div>`;
+    return;
+  }
+  el.innerHTML = state.episodes.map(ep => {
+    const t = EP_TYPES[ep.type] || EP_TYPES.general;
+    return `
+    <div class="episode-item">
+      <div class="episode-header">
+        <div class="row gap-8">
+          <span class="episode-type-badge ${t.cls}">${t.label}</span>
+          <input type="date" value="${ep.date}" style="width:140px"
+            oninput="updateEpisode(${ep.id},'date',this.value)">
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="removeEpisode(${ep.id})">삭제</button>
+      </div>
+      <div class="episode-body">
+        <div class="form-group">
+          <label>유형</label>
+          <select onchange="updateEpisode(${ep.id},'type',this.value);renderEpisodes()">
+            ${Object.entries(EP_TYPES).map(([k,v]) =>
+              `<option value="${k}" ${ep.type===k?'selected':''}>${v.label}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>제목</label>
+          <input type="text" value="${ep.title}" placeholder="에피소드 제목"
+            oninput="updateEpisode(${ep.id},'title',this.value)">
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>내용</label>
+          <textarea placeholder="구체적인 내용을 기록하세요..."
+            oninput="updateEpisode(${ep.id},'content',this.value)">${ep.content}</textarea>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>🌱 사회적 영향 / 변화</label>
+          <textarea placeholder="이 케이스가 환자/지역사회에 미친 영향을 기록하세요..."
+            style="min-height:60px"
+            oninput="updateEpisode(${ep.id},'impact',this.value)">${ep.impact}</textarea>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+//  REPORT
+// ═══════════════════════════════════════
+function renderReport() {
+  const m = state.mission;
+  const days = getDays();
+
+  // stats
+  let totalTests = 0, totalPhlebotomy = 0;
+  days.forEach(d => {
+    const rec = state.records[d];
+    if (!rec) return;
+    totalPhlebotomy += (+rec.phlebotomy || 0);
+    Object.values(rec.tests || {}).forEach(v => { totalTests += (+v || 0); });
+  });
+
+  document.getElementById('report-subtitle').textContent =
+    `${m.country} ${m.region} | ${m.start} ~ ${m.end} | ${m.org}`;
+
+  document.getElementById('report-stats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">총 검사건수</div>
+      <div class="stat-value">${totalTests.toLocaleString()}</div>
+      <div class="stat-sub">전 기간 합계</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">채혈건수</div>
+      <div class="stat-value">${totalPhlebotomy.toLocaleString()}</div>
+      <div class="stat-sub">전 기간 합계</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">검사 항목 수</div>
+      <div class="stat-value">${state.tests.length}</div>
+      <div class="stat-sub">종목</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">봉사 기간</div>
+      <div class="stat-value">${days.length}</div>
+      <div class="stat-sub">일간</div>
+    </div>`;
+
+  // mission summary
+  document.getElementById('report-mission-summary').innerHTML = `
+    <div class="card-title">봉사활동 개요</div>
+    <div class="form-grid">
+      ${[
+        ['국가/지역', `${m.country} ${m.region}`],
+        ['기간', `${m.start} ~ ${m.end} (${days.length}일)`],
+        ['기관', m.org], ['장소', m.place],
+        ['팀원수', m.teamCount + '명'],
+        ['수혜 목표', m.targetCount + '명'],
+      ].map(([k,v]) => `<div class="form-group"><label>${k}</label><div style="padding:9px 0;color:var(--text)">${v||'-'}</div></div>`).join('')}
+      ${m.purpose ? `<div class="form-group full"><label>봉사 목적</label><div style="padding:9px 0;color:var(--text);line-height:1.7">${m.purpose}</div></div>` : ''}
+      ${m.members.length ? `<div class="form-group full"><label>팀 구성원</label><div class="tags-list" style="margin-top:4px">${m.members.map(mm => `<span class="tag"><span style="font-size:11px;color:var(--text3)">${mm.role}</span><span>${mm.name}</span></span>`).join('')}</div></div>` : ''}
+    </div>`;
+
+  // tests summary
+  if (state.tests.length) {
+    // per-test total
+    const testTotals = {};
+    state.tests.forEach(t => { testTotals[t.id] = 0; });
+    days.forEach(d => {
+      const rec = state.records[d];
+      if (!rec) return;
+      Object.entries(rec.tests || {}).forEach(([tid, cnt]) => {
+        testTotals[tid] = (testTotals[tid] || 0) + (+cnt || 0);
+      });
+    });
+    const maxCount = Math.max(...Object.values(testTotals), 1);
+    document.getElementById('report-tests-summary').innerHTML = `
+      <div class="card-title">검사항목별 실적</div>
+      <div class="chart-bar-wrap">
+        ${state.tests.map(t => `
+          <div class="chart-bar-item">
+            <div class="chart-bar-label" title="${t.name}">${t.name || '(미입력)'}</div>
+            <div class="chart-bar-track">
+              <div class="chart-bar-fill" style="width:${(testTotals[t.id]||0)/maxCount*100}%"></div>
+            </div>
+            <div class="chart-bar-count">${(testTotals[t.id]||0).toLocaleString()}</div>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top:20px">
+        <table class="record-table">
+          <thead><tr><th>#</th><th>검사명</th><th>분류</th><th>방법</th><th>총 건수</th></tr></thead>
+          <tbody>
+            ${state.tests.map((t,i) => `
+              <tr>
+                <td style="font-family:'Courier New',Consolas,monospace;color:var(--text3)">${i+1}</td>
+                <td style="font-weight:600">${t.name||'-'}</td>
+                <td>${t.category}</td>
+                <td style="font-size:12px;color:var(--text2)">${t.method}</td>
+                <td style="font-family:'Courier New',Consolas,monospace;font-weight:700;color:var(--accent2)">${(testTotals[t.id]||0).toLocaleString()}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  // records summary
+  if (days.length) {
+    document.getElementById('report-records-summary').innerHTML = `
+      <div class="card-title">일별 검사 실적</div>
+      <table class="record-table">
+        <thead>
+          <tr>
+            <th>날짜</th>
+            <th>채혈</th>
+            ${state.tests.map(t => `<th>${t.name||'?'}</th>`).join('')}
+            <th>합계</th>
+            <th>특이사항</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${days.map(d => {
+            const rec = state.records[d] || {};
+            const dayTotal = state.tests.reduce((a,t)=>a+(+((rec.tests||{})[t.id]||0)),0);
+            return `<tr>
+              <td style="font-family:'Courier New',Consolas,monospace;font-size:12px">${d}</td>
+              <td>${rec.phlebotomy||0}</td>
+              ${state.tests.map(t => `<td>${(rec.tests&&rec.tests[t.id])||0}</td>`).join('')}
+              <td style="font-weight:700;color:var(--accent)">${dayTotal}</td>
+              <td style="font-size:12px;color:var(--text2)">${rec.notes||'-'}</td>
+            </tr>`;
+          }).join('')}
+          <tr class="total-row">
+            <td>합계</td>
+            <td>${days.reduce((a,d)=>a+(+(state.records[d]||{}).phlebotomy||0),0)}</td>
+            ${state.tests.map(t => `<td>${days.reduce((a,d)=>a+(+((state.records[d]||{}).tests||{})[t.id]||0),0)}</td>`).join('')}
+            <td>${totalTests}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>`;
+  }
+
+  // episodes summary
+  if (state.episodes.length) {
+    document.getElementById('report-episodes-summary').innerHTML = `
+      <div class="card-title">현장 에피소드</div>
+      ${state.episodes.map(ep => {
+        const t = EP_TYPES[ep.type] || EP_TYPES.general;
+        return `<div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+          <div class="row gap-8" style="margin-bottom:8px">
+            <span class="episode-type-badge ${t.cls}">${t.label}</span>
+            <span style="font-size:12px;color:var(--text3)">${ep.date||''}</span>
+            <span style="font-weight:600">${ep.title||''}</span>
+          </div>
+          <div style="color:var(--text2);font-size:13px;line-height:1.7;margin-bottom:6px">${ep.content||''}</div>
+          ${ep.impact ? `<div style="background:var(--accent-dim);border-radius:4px;padding:8px 12px;font-size:12px;color:var(--accent2)">🌱 ${ep.impact}</div>` : ''}
+        </div>`;
+      }).join('')}`;
+  }
+
+  // contribution
+  document.getElementById('report-contribution').value = state.contribution || '';
+  document.getElementById('report-handover').value = state.handover || '';
+}
+
+function saveContribution() {
+  state.contribution = document.getElementById('report-contribution').value;
+  state.handover = document.getElementById('report-handover').value;
+}
+
+// ═══════════════════════════════════════
+//  BADGES
+// ═══════════════════════════════════════
+function updateBadges() {
+  document.getElementById('badge-tests').textContent = state.tests.length;
+  document.getElementById('badge-supplies').textContent = (state.supplies.filter(s=>s.checked).length)+'/'+state.supplies.length;
+  document.getElementById('badge-records').textContent = getDays().length;
+  document.getElementById('badge-episodes').textContent = state.episodes.length;
+}
+
+// ═══════════════════════════════════════
+//  SAVE / LOAD
+// ═══════════════════════════════════════
+function saveToFile() {
+  collectState();
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const m = state.mission;
+  const fname = `봉사기록_${m.country||'국가'}_${m.start||'날짜'}.json`;
+  a.download = fname;
+  a.click();
+}
+
+function loadFromFile() {
+  document.getElementById('load-file-input').click();
+}
+
+function handleFileLoad(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      state = JSON.parse(e.target.result);
+      applyStateToUI();
+      alert('✅ 파일을 불러왔습니다!');
+    } catch(err) { alert('❌ 파일 형식 오류: ' + err.message); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function collectState() {
+  saveMission();
+  saveContribution();
+}
+
+function applyStateToUI() {
+  const m = state.mission;
+  document.getElementById('m-country').value = m.country||'';
+  document.getElementById('m-region').value = m.region||'';
+  document.getElementById('m-start').value = m.start||'';
+  document.getElementById('m-end').value = m.end||'';
+  document.getElementById('m-org').value = m.org||'';
+  document.getElementById('m-place').value = m.place||'';
+  document.getElementById('m-purpose').value = m.purpose||'';
+  document.getElementById('m-target').value = m.targetCount||'';
+  document.getElementById('m-team-count').value = m.teamCount||'';
+  renderMembers();
+  renderPreChecklist();
+  renderTests();
+  renderSupplies();
+  renderRecords();
+  renderEpisodes();
+  updateBadges();
+}
+
+function printReport() {
+  collectState();
+  // switch to report tab
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-report').classList.add('active');
+  renderReport();
+  setTimeout(() => window.print(), 300);
+}
+
+// ═══════════════════════════════════════
+//  EXCEL EXPORT (simple CSV)
+// ═══════════════════════════════════════
+function exportExcel() {
+  collectState();
+  const days = getDays();
+  let csv = '\uFEFF'; // BOM
+  csv += '날짜,채혈건수,' + state.tests.map(t=>t.name||'항목').join(',') + ',합계,담당자,특이사항\n';
+  let colTotals = new Array(state.tests.length).fill(0);
+  let grandTotal = 0, grandPhlebotomy = 0;
+  days.forEach(d => {
+    const rec = state.records[d] || {};
+    const counts = state.tests.map(t => (+((rec.tests||{})[t.id]||0)));
+    const dayTotal = counts.reduce((a,b)=>a+b,0);
+    counts.forEach((c,i) => colTotals[i] += c);
+    grandTotal += dayTotal;
+    grandPhlebotomy += (+rec.phlebotomy||0);
+    csv += `${d},${rec.phlebotomy||0},${counts.join(',')},${dayTotal},"${rec.examiners||''}","${rec.notes||''}"\n`;
+  });
+  csv += `합계,${grandPhlebotomy},${colTotals.join(',')},${grandTotal},,\n`;
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `봉사검사기록_${state.mission.country||'국가'}.csv`;
+  a.click();
+}
+
+// ═══════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════
+(function init() {
+  renderPreChecklist();
+  renderTests();
+  initSupplies();
+  updateBadges();
+})();
+</script>
+</body>
+</html>
