@@ -1,1 +1,1 @@
-https://github.com/biomedist/volunteer-lab/
+https://biomedist.github.io/volunteer-lab
