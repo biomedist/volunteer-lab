@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 키르기스스탄 의료봉사 — 진단검사 보고서</title>
+<style>
+/* ── TOKENS ── */
+:root {
+  --sky:    #EEF3F9;   /* 나린 하늘 */
+  --snow:   #F8FAFC;
+  --deep:   #1A2744;   /* 천산산맥 짙은 남색 */
+  --mid:    #2E4A80;
+  --muted:  #6B7FA3;
+  --line:   #D3DCE8;
+  --blood:  #C0392B;   /* 의료 포인트 */
+  --blood2: #E74C3C;
+  --gold:   #B8860B;
+  --white:  #FFFFFF;
+  --fs-xl:  clamp(2.4rem, 6vw, 4.8rem);
+  --fs-lg:  clamp(1.4rem, 3vw, 2rem);
+  --fs-md:  1.05rem;
+  --fs-sm:  0.875rem;
+  --fs-xs:  0.78rem;
+}
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Nanum Gothic', sans-serif;
+  background: var(--sky);
+  color: var(--deep);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── HERO ── */
+.hero {
+  background: var(--deep);
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: flex-end;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.hero-mountains {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 120% 60% at 50% 110%, #0d1e3d 0%, transparent 70%),
+    linear-gradient(180deg, #1a2e58 0%, #0f1c3a 40%, #0a1228 100%);
+}
+
+/* SVG mountain silhouette */
+.hero-svg {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  width: 100%;
+}
+
+.hero-content {
+  position: relative; z-index: 10;
+  padding: 4rem 5vw 5rem;
+  max-width: 900px;
+}
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: var(--fs-xs);
+  font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--blood2);
+  margin-bottom: 1.8rem;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: block; width: 28px; height: 2px;
+  background: var(--blood2);
+}
+
+.hero-title {
+  font-size: var(--fs-xl);
+  font-weight: 900;
+  color: var(--white);
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin-bottom: 1.4rem;
+}
+.hero-title em {
+  font-style: normal;
+  color: #8DAED9;
+}
+
+.hero-sub {
+  font-size: var(--fs-md);
+  color: #8DAED9;
+  max-width: 540px;
+  line-height: 1.8;
+  margin-bottom: 3rem;
+}
+
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: 10px;
+}
+.hero-pill {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-size: var(--fs-xs);
+  color: #ccdaf0;
+  letter-spacing: 0.3px;
+}
+
+/* ── STATS BELT ── */
+.stats-belt {
+  background: var(--blood);
+  color: white;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.stat-block {
+  padding: 2rem 1.5rem;
+  border-right: 1px solid rgba(255,255,255,0.15);
+  text-align: center;
+}
+.stat-block:last-child { border-right: none; }
+.stat-num {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 900;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  display: block;
+  line-height: 1;
+  margin-bottom: 6px;
+  font-family: 'Courier New', Consolas, monospace;
+}
+.stat-lbl {
+  font-size: var(--fs-xs);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+/* ── SECTIONS ── */
+.section {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 5rem 5vw;
+}
+.section + .section {
+  border-top: 1px solid var(--line);
+}
+
+.section-label {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--blood);
+  margin-bottom: 0.6rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-label::after {
+  content: ''; flex: 1; max-width: 40px;
+  height: 1.5px; background: var(--blood);
+}
+
+.section-title {
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  color: var(--deep);
+  letter-spacing: -0.5px;
+  line-height: 1.25;
+  margin-bottom: 2rem;
+}
+
+/* ── OVERVIEW GRID ── */
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+.ov-cell {
+  background: var(--white);
+  padding: 1.2rem 1.5rem;
+}
+.ov-label {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.ov-value {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--deep);
+}
+.ov-cell.full { grid-column: 1 / -1; }
+
+/* ── TEAM ── */
+.team-chips {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-top: 0.4rem;
+}
+.team-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--sky); border: 1px solid var(--line);
+  border-radius: 100px; padding: 5px 14px;
+  font-size: var(--fs-sm);
+}
+.chip-role {
+  font-size: 10px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+/* ── TEST BARS ── */
+.test-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2.5rem;
+}
+.test-table th {
+  text-align: left;
+  font-size: var(--fs-xs);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 0 0.8rem;
+  border-bottom: 1.5px solid var(--line);
+  font-weight: 600;
+}
+.test-table th:not(:first-child) { text-align: right; }
+.test-table td {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.test-table tr:last-child td { border-bottom: none; }
+.test-name { font-weight: 700; font-size: var(--fs-md); }
+.test-cat {
+  font-size: var(--fs-xs); color: var(--muted);
+  margin-top: 2px;
+}
+.test-method-pill {
+  display: inline-block;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.method-auto { background: #EBF4FF; color: #1A56A8; }
+.method-rapid { background: #FFF5F5; color: #C0392B; }
+.test-count {
+  font-size: 1.4rem; font-weight: 900;
+  color: var(--deep); text-align: right;
+  font-family: 'Courier New', Consolas, monospace;
+  white-space: nowrap;
+}
+.bar-cell { width: 45%; padding-right: 1rem; }
+.bar-track {
+  height: 6px; background: var(--line); border-radius: 3px; overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--mid), var(--blood));
+  border-radius: 3px;
+}
+
+/* ── DAILY LOG ── */
+.day-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 2rem;
+}
+.day-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.2rem 1.4rem;
+  position: relative;
+  overflow: hidden;
+}
+.day-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--mid), var(--blood));
+}
+.day-date {
+  font-size: var(--fs-xs);
+  color: var(--muted); letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+.day-total {
+  font-size: 2.4rem; font-weight: 900;
+  color: var(--deep); line-height: 1;
+  font-family: 'Courier New', Consolas, monospace;
+  margin-bottom: 2px;
+}
+.day-total-lbl { font-size: var(--fs-xs); color: var(--muted); }
+.day-phlebotomy {
+  margin-top: 0.8rem; padding-top: 0.8rem;
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-xs); color: var(--muted);
+}
+.day-phlebotomy strong { color: var(--blood); font-family: 'Courier New', Consolas, monospace; }
+.day-note {
+  margin-top: 0.6rem;
+  font-size: var(--fs-xs); color: var(--muted);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ── DAILY BREAKDOWN TABLE ── */
+.breakdown-wrap {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: auto;
+  margin-bottom: 2.5rem;
+}
+.breakdown-table {
+  width: 100%; border-collapse: collapse;
+  min-width: 600px;
+}
+.breakdown-table th {
+  background: var(--sky);
+  font-size: var(--fs-xs); text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--muted);
+  padding: 0.8rem 1rem; text-align: right; font-weight: 600;
+}
+.breakdown-table th:first-child { text-align: left; }
+.breakdown-table td {
+  padding: 0.75rem 1rem; text-align: right;
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-sm);
+  font-family: 'Courier New', Consolas, monospace;
+}
+.breakdown-table td:first-child {
+  text-align: left; font-family: inherit;
+  font-weight: 600; color: var(--deep);
+  font-size: var(--fs-sm);
+}
+.breakdown-table tr:last-child {
+  background: var(--sky); font-weight: 900;
+}
+.breakdown-table tr:last-child td { color: var(--deep); font-weight: 900; }
+.bd-total { color: var(--blood) !important; font-weight: 900 !important; }
+
+/* ── EPISODES ── */
+.episodes-list { display: flex; flex-direction: column; gap: 20px; }
+.episode-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.6rem 1.8rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.4rem;
+}
+.ep-icon {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.ep-challenge .ep-icon { background: #FFF0EF; }
+.ep-notable .ep-icon { background: #FFF9E6; }
+.ep-body {}
+.ep-meta {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 6px;
+}
+.ep-type {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; padding: 2px 8px; border-radius: 4px;
+}
+.ep-type-challenge { background: #FFF0EF; color: var(--blood); }
+.ep-type-notable { background: #E8F4FF; color: var(--mid); }
+.ep-date { font-size: var(--fs-xs); color: var(--muted); }
+.ep-title { font-weight: 800; font-size: 1rem; color: var(--deep); margin-bottom: 6px; }
+.ep-content { font-size: var(--fs-sm); color: #4A5568; line-height: 1.75; }
+
+/* ── CONTRIBUTION ── */
+.contrib-block {
+  background: var(--deep);
+  border-radius: 14px;
+  padding: 2.5rem;
+  color: white;
+  margin-bottom: 2rem;
+}
+.contrib-block p {
+  font-size: var(--fs-sm);
+  line-height: 1.9;
+  color: #B8C8E0;
+  white-space: pre-line;
+}
+.contrib-block strong { color: white; font-weight: 700; }
+
+.handover-block {
+  background: var(--white);
+  border: 1.5px solid var(--line);
+  border-left: 4px solid var(--blood);
+  border-radius: 0 10px 10px 0;
+  padding: 1.8rem 2rem;
+}
+.handover-title {
+  font-size: var(--fs-xs); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--blood); margin-bottom: 1rem;
+}
+.handover-block p {
+  font-size: var(--fs-sm); color: #4A5568;
+  line-height: 1.9; white-space: pre-line;
+}
+
+/* ── PURPOSE BOX ── */
+.purpose-box {
+  background: linear-gradient(135deg, #EEF3F9 0%, #E8EFF8 100%);
+  border-radius: 12px;
+  padding: 1.8rem 2rem;
+  border: 1px solid var(--line);
+  margin-bottom: 2rem;
+  font-size: var(--fs-md);
+  color: var(--deep);
+  line-height: 1.8;
+}
+
+/* ── FOOTER ── */
+footer {
+  background: var(--deep);
+  color: #8DAED9;
+  padding: 2.5rem 5vw;
+  text-align: center;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.5px;
+}
+footer strong { color: white; }
+
+/* ── SCROLL ANIMATIONS ── */
+.fade-up {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-up.visible { opacity: 1; transform: none; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 620px) {
+  .stats-belt { grid-template-columns: repeat(2, 1fr); }
+  .stat-block:nth-child(2) { border-right: none; }
+  .overview-grid { grid-template-columns: 1fr; }
+  .episode-card { grid-template-columns: 1fr; }
+  .ep-icon { display: none; }
+  .day-grid { grid-template-columns: repeat(2, 1fr); }
+  .hero-content { padding: 2.5rem 1.2rem 3rem; }
+  .section { padding: 3rem 1.2rem; }
+}
+
+@media print {
+  .hero { min-height: auto; padding: 2rem; }
+  .hero-mountains { display: none; }
+  .fade-up { opacity: 1 !important; transform: none !important; }
+  .section { padding: 2rem 1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-mountains"></div>
+
+  <!-- Mountain SVG silhouette -->
+  <svg class="hero-svg" viewBox="0 0 1440 280" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice">
+    <path d="M0,280 L0,200 L80,160 L160,190 L260,100 L340,140 L420,80 L500,120 L580,60 L660,110 L720,40 L780,90 L860,30 L940,85 L1020,55 L1100,95 L1180,45 L1260,100 L1340,70 L1440,110 L1440,280 Z"
+      fill="#0f1c3a" opacity="0.8"/>
+    <path d="M0,280 L0,230 L120,200 L200,220 L300,170 L400,200 L480,155 L560,185 L640,145 L720,175 L800,130 L880,165 L960,140 L1040,170 L1120,148 L1200,175 L1300,155 L1440,180 L1440,280 Z"
+      fill="#0a1228" opacity="0.9"/>
+    <!-- Snow caps -->
+    <path d="M420,80 L400,95 L440,95 Z M580,60 L562,78 L598,78 Z M720,40 L700,62 L740,62 Z M860,30 L838,55 L882,55 Z M1020,55 L1002,75 L1038,75 Z M1180,45 L1160,68 L1200,68 Z"
+      fill="rgba(255,255,255,0.18)"/>
+  </svg>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">진단검사 의료봉사 보고서</div>
+    <h1 class="hero-title">
+      키르기스스탄<br><em>나린 Naryn</em>
+    </h1>
+    <p class="hero-sub">
+      해발 2,044m 고산지대, 의료 취약지역 나린의 34,000명 주민을 위한<br>
+      서울아산병원 의료봉사단 진단검사 활동 기록
+    </p>
+    <div class="hero-meta">
+      <span class="hero-pill">📅 2026. 05. 31 – 06. 03</span>
+      <span class="hero-pill">🏥 서울아산병원</span>
+      <span class="hero-pill">👥 72명 파견</span>
+      <span class="hero-pill">⛰️ 해발 2,044m</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STATS BELT ══ -->
+<div class="stats-belt">
+  <div class="stat-block">
+    <span class="stat-num">890</span>
+    <span class="stat-lbl">총 검사건수</span>
+  </div>
+  <div class="stat-block">
+    <span class="stat-num">402</span>
+    <span class="stat-lbl">채혈 인원</span>
+  </div>
+  <div class="stat-block">
+    <span class="stat-num">6</span>
+    <span class="stat-lbl">검사 항목</span>
+  </div>
+  <div class="stat-block">
+    <span class="stat-num">4</span>
+    <span class="stat-lbl">봉사 일수</span>
+  </div>
+</div>
+
+<!-- ══ SECTION 1: 봉사 개요 ══ -->
+<section class="section fade-up">
+  <div class="section-label">Mission Overview</div>
+  <h2 class="section-title">봉사활동 개요</h2>
+
+  <div class="purpose-box">
+    의료취약지역인 나린(Naryn)은 키르기스스탄 중부에 위치한 도시로, 인구는 약 34,000명이며 해발 2,044m의 고산지대에 자리합니다. 교통 접근성과 의료 인프라가 열악한 이 지역 주민들에게 체계적인 진단검사 서비스를 제공하기 위해 본 봉사팀이 파견되었습니다.
+  </div>
+
+  <div class="overview-grid">
+    <div class="ov-cell">
+      <div class="ov-label">국가 / 지역</div>
+      <div class="ov-value">키르기스스탄 · 나린 Naryn</div>
+    </div>
+    <div class="ov-cell">
+      <div class="ov-label">봉사 기간</div>
+      <div class="ov-value">2026. 05. 31 – 06. 03 (4일)</div>
+    </div>
+    <div class="ov-cell">
+      <div class="ov-label">주관 기관</div>
+      <div class="ov-value">서울아산병원</div>
+    </div>
+    <div class="ov-cell">
+      <div class="ov-label">봉사 장소</div>
+      <div class="ov-value">나린 센터</div>
+    </div>
+    <div class="ov-cell">
+      <div class="ov-label">파견 인원</div>
+      <div class="ov-value">72명</div>
+    </div>
+    <div class="ov-cell">
+      <div class="ov-label">수혜 목표</div>
+      <div class="ov-value">1,000명</div>
+    </div>
+    <div class="ov-cell full">
+      <div class="ov-label">진단검사팀</div>
+      <div class="team-chips">
+        <span class="team-chip"><span class="chip-role">임상병리사</span> 조영은</span>
+        <span class="team-chip"><span class="chip-role">임상병리사</span> 김미애</span>
+        <span class="team-chip"><span class="chip-role">임상병리사</span> 최회실</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SECTION 2: 검사 항목 ══ -->
+<section class="section fade-up">
+  <div class="section-label">Laboratory Tests</div>
+  <h2 class="section-title">검사 항목 및 실적</h2>
+
+  <table class="test-table">
+    <thead>
+      <tr>
+        <th>검사명</th>
+        <th>방법</th>
+        <th class="bar-cell"></th>
+        <th>총 건수</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="test-name">Chemistry-POCT</div>
+          <div class="test-cat">혈액검사</div>
+        </td>
+        <td><span class="test-method-pill method-auto">Auto</span></td>
+        <td class="bar-cell">
+          <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+        </td>
+        <td class="test-count">401</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="test-name">HbA1c</div>
+          <div class="test-cat">혈액검사</div>
+        </td>
+        <td><span class="test-method-pill method-auto">Auto</span></td>
+        <td class="bar-cell">
+          <div class="bar-track"><div class="bar-fill" style="width:75%"></div></div>
+        </td>
+        <td class="test-count">301</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="test-name">Urine Strip 10종</div>
+          <div class="test-cat">요검사</div>
+        </td>
+        <td><span class="test-method-pill method-rapid">Rapid</span></td>
+        <td class="bar-cell">
+          <div class="bar-track"><div class="bar-fill" style="width:33%"></div></div>
+        </td>
+        <td class="test-count">131</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="test-name">Urine hCG</div>
+          <div class="test-cat">요검사</div>
+        </td>
+        <td><span class="test-method-pill method-rapid">Rapid</span></td>
+        <td class="bar-cell">
+          <div class="bar-track"><div class="bar-fill" style="width:8%"></div></div>
+        </td>
+        <td class="test-count">31</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="test-name">TSH</div>
+          <div class="test-cat">혈액검사</div>
+        </td>
+        <td><span class="test-method-pill method-rapid">Rapid</span></td>
+        <td class="bar-cell">
+          <div class="bar-track"><div class="bar-fill" style="width:3.2%"></div></div>
+        </td>
+        <td class="test-count">13</td>
+      </tr>
+      <tr>
+        <td>
+          <div class="test-name">HBsAg</div>
+          <div class="test-cat">혈액검사 · 감염</div>
+        </td>
+        <td><span class="test-method-pill method-rapid">Rapid</span></td>
+        <td class="bar-cell">
+          <div class="bar-track"><div class="bar-fill" style="width:3.2%"></div></div>
+        </td>
+        <td class="test-count">13</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══ SECTION 3: 일별 기록 ══ -->
+<section class="section fade-up">
+  <div class="section-label">Daily Records</div>
+  <h2 class="section-title">일별 검사 실적</h2>
+
+  <div class="day-grid">
+    <div class="day-card">
+      <div class="day-date">2026. 05. 31 (일)</div>
+      <div class="day-total">5</div>
+      <div class="day-total-lbl">검사 건</div>
+      <div class="day-phlebotomy">채혈 <strong>2</strong>명</div>
+      <div class="day-note">검사장소 셋팅 및 현장 점검 완료</div>
+    </div>
+    <div class="day-card">
+      <div class="day-date">2026. 06. 01 (월)</div>
+      <div class="day-total">245</div>
+      <div class="day-total-lbl">검사 건</div>
+      <div class="day-phlebotomy">채혈 <strong>120</strong>명</div>
+      <div class="day-note">전기 공급 불안정 · 멀티탭 확보 필요</div>
+    </div>
+    <div class="day-card">
+      <div class="day-date">2026. 06. 02 (화)</div>
+      <div class="day-total">320</div>
+      <div class="day-total-lbl">검사 건</div>
+      <div class="day-phlebotomy">채혈 <strong>150</strong>명</div>
+      <div class="day-note">현지 MT 및 진검의 방문</div>
+    </div>
+    <div class="day-card">
+      <div class="day-date">2026. 06. 03 (수)</div>
+      <div class="day-total">320</div>
+      <div class="day-total-lbl">검사 건</div>
+      <div class="day-phlebotomy">채혈 <strong>130</strong>명</div>
+      <div class="day-note">—</div>
+    </div>
+  </div>
+
+  <!-- Breakdown Table -->
+  <div class="breakdown-wrap">
+    <table class="breakdown-table">
+      <thead>
+        <tr>
+          <th>날짜</th>
+          <th>HbA1c</th>
+          <th>Chem-POCT</th>
+          <th>Urine Strip</th>
+          <th>Urine hCG</th>
+          <th>TSH</th>
+          <th>HBsAg</th>
+          <th>채혈</th>
+          <th class="bd-total">합계</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>05.31</td>
+          <td>2</td><td>2</td><td>1</td><td>0</td><td>0</td><td>0</td>
+          <td>2</td><td class="bd-total">5</td>
+        </tr>
+        <tr>
+          <td>06.01</td>
+          <td>76</td><td>100</td><td>46</td><td>12</td><td>6</td><td>5</td>
+          <td>120</td><td class="bd-total">245</td>
+        </tr>
+        <tr>
+          <td>06.02</td>
+          <td>113</td><td>150</td><td>42</td><td>9</td><td>4</td><td>2</td>
+          <td>150</td><td class="bd-total">320</td>
+        </tr>
+        <tr>
+          <td>06.03</td>
+          <td>110</td><td>149</td><td>42</td><td>10</td><td>3</td><td>6</td>
+          <td>130</td><td class="bd-total">320</td>
+        </tr>
+        <tr>
+          <td>합계</td>
+          <td>301</td><td>401</td><td>131</td><td>31</td><td>13</td><td>13</td>
+          <td>402</td><td class="bd-total">890</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══ SECTION 4: 에피소드 ══ -->
+<section class="section fade-up">
+  <div class="section-label">Field Episodes</div>
+  <h2 class="section-title">현장 기록</h2>
+
+  <div class="episodes-list">
+    <div class="episode-card ep-challenge">
+      <div class="ep-icon">⚡</div>
+      <div class="ep-body">
+        <div class="ep-meta">
+          <span class="ep-type ep-type-challenge">어려움</span>
+          <span class="ep-date">2026. 06. 01</span>
+        </div>
+        <div class="ep-title">공간 문제 — 오픈 구조의 검사실</div>
+        <div class="ep-content">교육센터를 빌린 공간으로, 진단검사실 위치가 오픈된 구조여서 집중도가 낮아지는 문제가 있었습니다. 파티션 추가 설치 또는 독립된 부스 형태의 공간 구획을 사전에 요청하는 것을 권고합니다.</div>
+      </div>
+    </div>
+    <div class="episode-card ep-challenge">
+      <div class="ep-icon">🚻</div>
+      <div class="ep-body">
+        <div class="ep-meta">
+          <span class="ep-type ep-type-challenge">어려움</span>
+          <span class="ep-date">2026. 06. 02</span>
+        </div>
+        <div class="ep-title">화장실 시설 부족</div>
+        <div class="ep-content">검사실 층 내 화장실이 1칸뿐이어서 소변 검체(Urine Strip / hCG) 채취 시 대기 시간이 과도하게 길어졌습니다. 별도의 간이 채취 공간 마련 또는 대기 동선 분리를 권장합니다.</div>
+      </div>
+    </div>
+    <div class="episode-card ep-notable">
+      <div class="ep-icon">🤝</div>
+      <div class="ep-body">
+        <div class="ep-meta">
+          <span class="ep-type ep-type-notable">인상적 교류</span>
+          <span class="ep-date">2026. 06. 02</span>
+        </div>
+        <div class="ep-title">살롬베콥 의대생들과의 교류</div>
+        <div class="ep-content">살롬베콥 의대생들이 함께 의료봉사에 참여하였고, 통역사들은 현지 한글학당을 수료한 분들로 구성되어 있어 소통에 전혀 어려움이 없었습니다. 현지 예비 의료인들과의 우호적인 네트워크 형성과 실무 경험 공유라는 측면에서 매우 의미 있는 교류였습니다.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SECTION 5: 사회적 기여 ══ -->
+<section class="section fade-up">
+  <div class="section-label">Impact & Contribution</div>
+  <h2 class="section-title">사회적 기여 및 현장 변화</h2>
+
+  <div class="contrib-block">
+    <p><strong>의료 취약지 접근성 개선</strong>
+해발 2,044m 고산지대이자 의료 취약지역인 나린(Naryn) 주민들을 대상으로 총 890건의 검사(채혈 402명)를 단기간(4일) 내에 성공적으로 수행하여 잠재적 질환을 조기 발견하였습니다.
+
+<strong>만성질환 모니터링</strong>
+당뇨 스크리닝을 위한 HbA1c(301건) 및 Chemistry-POCT(401건) 검사 비중이 높아, 현지 주민들의 만성질환 상태를 객관적으로 파악하는 데 크게 기여하였습니다.
+
+<strong>현지 의료 인력과의 협력</strong>
+살롬베콥 의대생들과의 공동 작업을 통해 현지 예비 의료인들에게 실무 경험을 제공하고 우호적인 네트워크를 형성하였습니다.</p>
+  </div>
+
+  <div class="handover-block">
+    <div class="handover-title">📋 다음 봉사팀 인계 사항</div>
+    <p>1. 검사실 환경 및 인프라 보완
+공간 독립성 확보: 현재 진단검사실이 오픈된 교육센터 공간에 위치하여 다소 혼잡합니다. 파티션이나 독립 부스 형태의 공간 구획을 사전에 요청하시기 바랍니다.
+전력 공급 유의: 현지 전력 공급이 원활하지 않으므로 고용량 멀티탭 및 전력 안정화 장비를 충분히 구비해야 합니다.
+
+2. 요검사 채취 동선 및 위생 관리
+화장실 시설이 1칸으로 협소하여 대기 시간이 길어집니다. 별도의 간이 채취 공간 및 안내 요원 배치를 권장합니다.
+
+3. 현장 정리 및 대외 협력
+Safety box 및 의료폐기물 분리수거 지침을 매일 철저히 점검해야 합니다.
+현지 의대생·통역원들의 역량이 우수하므로 업무 매뉴얼을 사전에 공유하면 높은 시너지를 기대할 수 있습니다.</p>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <p><strong>2026 키르기스스탄 나린 의료봉사 — 진단검사팀</strong></p>
+  <p style="margin-top:6px">서울아산병원 · 2026년 5월 31일 – 6월 3일</p>
+  <p style="margin-top:6px;opacity:0.6">임상병리사: 조영은 · 김미애 · 최회실</p>
+</footer>
+
+<script>
+// Scroll fade-in
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+
+// Counter animation for stats
+function animateCount(el, target) {
+  let current = 0;
+  const step = Math.ceil(target / 60);
+  const timer = setInterval(() => {
+    current = Math.min(current + step, target);
+    el.textContent = current;
+    if (current >= target) clearInterval(timer);
+  }, 20);
+}
+const statNums = document.querySelectorAll('.stat-num');
+const statsObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const target = parseInt(e.target.textContent);
+      animateCount(e.target, target);
+      statsObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.5 });
+statNums.forEach(el => statsObs.observe(el));
+</script>
+</body>
+</html>
